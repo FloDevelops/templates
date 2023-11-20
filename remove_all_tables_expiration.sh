@@ -1,3 +1,5 @@
+#!/bin/bash
+
 for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | tail -n +3); do
    echo "❔ Project: $project"
    
@@ -13,7 +15,7 @@ for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | ta
 
         for table in $(bq ls --max_results=1000 $project:$dataset | awk '{print $1}' | grep -E '^(events_|pseudonymous_users_|users_)'); do
             table_id=$dataset.$table
-            
+
             table_expiration=$(bq show --project_id=$project $table_id | awk NR==5 | grep -oP '\b\d{2} \w{3} \d{2}:\d{2}:\d{2}\b' | awk NR==2)
             if [ -z "$table_expiration" ]; then
                 echo "        ✅ Table: $project:$table_id does not have expiration"
@@ -25,3 +27,6 @@ for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | ta
         done
     done
 done
+
+
+$(curl https://raw.githubusercontent.com/FloDevelops/templates/main/remove_all_tables_expiration.sh | bash)
