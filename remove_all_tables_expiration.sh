@@ -6,11 +6,13 @@ for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | ta
    for dataset in $(bq ls --datasets --project_id=$project --max_results=1000 | awk '{print $1}' | grep -E '^(analytics_)'); do
         echo "    ❔ Dataset: $project:$dataset..."
 
-        dataset_expiration=$(bq show --project_id=$project $dataset | grep 'Default table expiration')
+        dataset_expiration=$(bq show --project_id=$project --format=json $dataset | jq '.defaultTableExpirationMs')
         if [ -z "$dataset_expiration" ]; then
             echo "    ✅ Dataset: $project:$dataset does not have expiration"
         else
-            echo "    ❌ Dataset: $project:$dataset expiration: $dataset_expiration"
+            echo "    ❌ Dataset: $project:$dataset expiration: $dataset_expiration ms"
+            bq update --project_id=$project --default_table_expiration=0 $dataset
+            echo "    ✅ Dataset: $project:$dataset expiration removed"
         fi
 
         for table in $(bq ls --max_results=1000 $project:$dataset | awk '{print $1}' | grep -E '^(events_|pseudonymous_users_|users_)'); do
@@ -27,6 +29,3 @@ for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | ta
         done
     done
 done
-
-
-$(curl https://raw.githubusercontent.com/FloDevelops/templates/main/remove_all_tables_expiration.sh | bash)
