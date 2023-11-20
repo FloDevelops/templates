@@ -7,7 +7,7 @@ for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | ta
         echo "    ❔ Dataset: $project:$dataset..."
 
         dataset_expiration=$(bq show --project_id=$project --format=json $dataset | jq '.defaultTableExpirationMs')
-        if [ -z "$dataset_expiration" ]; then
+        if [ "$dataset_expiration" == "null" ]; then
             echo "    ✅ Dataset: $project:$dataset does not have expiration"
         else
             echo "    ❌ Dataset: $project:$dataset expiration: $dataset_expiration ms"
