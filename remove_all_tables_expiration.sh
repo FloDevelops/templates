@@ -21,6 +21,7 @@ for project in $(bq ls --projects | awk '{print $1}' | grep -v "project_id" | ta
             table_expiration=$(bq show --project_id=$project $table_id | awk NR==5 | grep -oP '\b\d{2} \w{3} \d{2}:\d{2}:\d{2}\b' | awk NR==2)
             if [ -z "$table_expiration" ]; then
                 echo "        ✅ Table: $project:$table_id does not have expiration"
+                break
             else
                 echo "        ❌ Table: $project:$table_id expiration: $table_expiration"
                 bq update --project_id=$project --expiration=0 $table_id
